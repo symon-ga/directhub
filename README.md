@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/banner.png" alt="Direct Hub" width="720"></p>
+
 # Direct Hub
 
 Hub de comunicação local-first: um invólucro local para várias sessões oficiais do WhatsApp Web e do Instagram Direct, com isolamento persistente por conta.
