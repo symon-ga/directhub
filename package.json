@@ -6,11 +6,36 @@
   "scripts": {
     "start": "electron .",
     "check": "node --check src/main.js && node --check src/services.js && node --check src/account-store.js && node --check src/preload.js && node --check src/whatsapp-preload.js && node --check src/instagram-preload.js && node --check src/renderer/app.js",
-    "test": "node --test"
+    "test": "node --test",
+    "dist:mac": "electron-builder --mac --arm64"
   },
   "devDependencies": {
-    "electron": "44.4.3"
+    "electron": "44.4.3",
+    "electron-builder": "^26.18.0"
   },
   "license": "SEE LICENSE IN LICENSE",
-  "repository": "github:symon-ga/directhub"
+  "repository": "github:symon-ga/directhub",
+  "build": {
+    "appId": "com.symonga.directhub",
+    "productName": "Direct Hub",
+    "files": [
+      "src/**",
+      "assets/**",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "identity": "-",
+      "hardenedRuntime": false
+    }
+  }
 }

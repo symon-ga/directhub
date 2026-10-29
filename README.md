@@ -15,6 +15,13 @@ Requer Node.js 20+.
 
 Cada conta recebe uma partição Electron própria (`persist:<serviço>-<UUID>`). Contas guardadas antes do Instagram continuam como WhatsApp. Cookies, IndexedDB, cache e service workers ficam separados e são restaurados quando a aplicação reabre. Remover uma conta também apaga os dados locais da respetiva partição.
 
+## Mac com chip M (Apple Silicon)
+
+Roda nativo em arm64 (M1, M2, M3, M4); o código não tem módulos nativos, só o Electron.
+
+- Do código-fonte: `npm install && npm start`.
+- Instalador: `npm run dist:mac` gera `dist/Direct Hub-<versão>-arm64.dmg`. O app sai com assinatura ad-hoc, sem certificado Apple. Se o macOS disser que o app está danificado ao abrir um `.dmg` baixado, rode `xattr -cr "/Applications/Direct Hub.app"`.
+
 ## Segurança aplicada
 
 - Cada conteúdo remoto usa `WebContentsView`; não há tag `<webview>` nem APIs WhatsApp não oficiais.
