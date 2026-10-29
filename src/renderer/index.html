@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'" />
+    <title>Direct Hub</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar" aria-label="Contas de mensagens">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>Direct Hub</span>
+      </div>
+      <p class="eyebrow">Mensagens</p>
+      <div id="account-list" class="account-list" role="list"></div>
+      <button id="add-account" class="add-account" type="button">+ Adicionar conta</button>
+      <div class="footer">
+        <button id="media-access" class="media-access" type="button">Liberar câmera e microfone</button>
+        <p id="media-status" class="media-status" aria-live="polite"></p>
+        <span>Sessões guardadas neste dispositivo</span>
+      </div>
+    </aside>
+    <main class="empty-space" aria-live="polite">
+      <section id="empty-state" class="empty-state">
+        <span class="empty-icon" aria-hidden="true">◌</span>
+        <h1>As suas conversas, num só lugar.</h1>
+        <p>Adicione uma conta do WhatsApp, pelo QR Code oficial, ou do Instagram, pelo login oficial.</p>
+      </section>
+    </main>
+    <dialog id="account-dialog">
+      <form id="account-form" method="dialog">
+        <h2>Adicionar conta</h2>
+        <p>Escolha um nome para reconhecer esta sessão neste computador.</p>
+        <label for="account-service">Serviço</label>
+        <select id="account-service" name="service">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="instagram">Instagram</option>
+        </select>
+        <label for="account-label">Nome da conta</label>
+        <input id="account-label" name="label" autocomplete="off" maxlength="48" placeholder="Ex.: Trabalho" required />
+        <p id="form-error" class="form-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button id="cancel-account" class="secondary" type="button">Cancelar</button>
+          <button type="submit">Adicionar</button>
+        </div>
+      </form>
+    </dialog>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "direct-hub",
+  "version": "0.1.0",
+  "description": "Local-first modular communication hub.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check src/main.js && node --check src/services.js && node --check src/account-store.js && node --check src/preload.js && node --check src/whatsapp-preload.js && node --check src/instagram-preload.js && node --check src/renderer/app.js",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "electron": "44.4.3"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": "github:symon-ga/directhub"
+}
