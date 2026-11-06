@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data: https:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <title>E-mail</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section class="list-pane" aria-label="Caixa de entrada">
+      <header class="list-head">
+        <span class="eyebrow">Caixa de entrada</span>
+        <button id="refresh" class="btn" type="button">Atualizar</button>
+      </header>
+      <div id="list" class="list" role="list"></div>
+    </section>
+    <main id="reader" class="reader" aria-live="polite">
+      <p class="placeholder">Escolha uma mensagem para ler.</p>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

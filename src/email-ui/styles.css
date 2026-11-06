@@ -1,0 +1,60 @@
+:root {
+  --black: #000;
+  --orange: #ff7a00;
+  --white: #fff;
+  --edge: #2b2b2b;
+  --muted: #b3b3b3;
+  --mono: "SF Mono", ui-monospace, Menlo, Consolas, "Courier New", monospace;
+  color: var(--white);
+  background: var(--black);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { display: flex; margin: 0; overflow: hidden; background: var(--black); }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+.eyebrow { color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.btn { padding: 6px 12px; color: var(--orange); background: var(--black); border: 1px solid var(--orange); border-radius: 4px; font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.btn:hover { color: var(--black); background: var(--orange); }
+.btn:disabled { color: var(--muted); border-color: var(--edge); background: var(--black); cursor: default; }
+
+.list-pane { display: flex; flex: 0 0 360px; flex-direction: column; min-width: 0; border-right: 1px solid var(--edge); }
+.list-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px; border-bottom: 1px solid var(--edge); }
+.list { flex: 1; overflow-y: auto; }
+
+.row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 0 8px; align-items: center; width: 100%; padding: 12px 16px; color: inherit; text-align: left; background: var(--black); border: 0; border-bottom: 1px solid var(--edge); border-left: 3px solid transparent; }
+.row:hover { background: #111; }
+.row.active { background: #141414; border-left-color: var(--orange); }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.row.unread .dot { background: var(--orange); }
+.row-from, .row-subject { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-from { font-size: 14px; }
+.row.unread .row-from { font-weight: 700; }
+.row-subject { grid-column: 2; margin-top: 3px; color: var(--muted); font-size: 13px; }
+.row.unread .row-subject { color: var(--white); }
+.row-meta { grid-row: 1; grid-column: 3; color: var(--muted); font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+.clip { margin-right: 6px; }
+
+.state { padding: 28px 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.state .btn { margin-top: 12px; }
+.state.error { color: var(--white); }
+
+.reader { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+.placeholder { margin: auto; color: var(--muted); font-size: 14px; }
+.msg-head { padding: 18px 24px 14px; border-bottom: 1px solid var(--edge); }
+.msg-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.msg-subject { margin: 0; font-size: 20px; line-height: 1.25; overflow-wrap: anywhere; }
+.msg-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+.msg-meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 12px 0 0; font-size: 13px; }
+.msg-meta dt { color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 18px; }
+.msg-meta dd { margin: 0; overflow-wrap: anywhere; }
+.attachments { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
+.attachments li { padding: 3px 8px; border: 1px solid var(--edge); border-radius: 4px; font-size: 12px; }
+.attachments span { color: var(--muted); font-family: var(--mono); }
+.img-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 24px; border-bottom: 1px solid var(--edge); color: var(--muted); font-size: 12px; }
+
+.body-frame { flex: 1; width: 100%; min-height: 0; border: 0; background: var(--white); }
+.body-text { flex: 1; margin: 0; padding: 20px 24px; overflow: auto; color: #111; background: var(--white); font: 14px/1.55 ui-sans-serif, system-ui, sans-serif; white-space: pre-wrap; overflow-wrap: anywhere; }

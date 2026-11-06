@@ -158,10 +158,38 @@ function createServiceView(account) {
   return view;
 }
 
-// Contas de e-mail não usam página web: o leitor é uma vista local (HTML do app).
-// TODO agente 2: criar aqui a vista local do leitor e devolvê-la (viewsByAccountId já cuida de layout e visibilidade).
-function createEmailView() {
-  return null;
+// Contas de e-mail não usam página web: o leitor é uma vista local (HTML do app), sem sessão persistente.
+function createEmailView(account) {
+  const existing = viewsByAccountId.get(account.id);
+  if (existing) return existing;
+  const view = new WebContentsView({
+    webPreferences: {
+      partition: `email-${account.id}`,
+      preload: path.join(__dirname, 'email-ui', 'preload.js'),
+      additionalArguments: [`--email-account=${account.id}`],
+      contextIsolation: true,
+      sandbox: true,
+      nodeIntegration: false,
+      webSecurity: true,
+      webviewTag: false
+    }
+  });
+  view.setVisible(false);
+
+  const { webContents } = view;
+  webContents.setWindowOpenHandler(({ url }) => {
+    openExternal(url);
+    return { action: 'deny' };
+  });
+  webContents.on('will-navigate', (event) => event.preventDefault());
+  webContents.once('destroyed', () => {
+    viewsByAccountId.delete(account.id);
+  });
+
+  viewsByAccountId.set(account.id, view);
+  mainWindow.contentView.addChildView(view);
+  webContents.loadFile(path.join(__dirname, 'email-ui', 'index.html'));
+  return view;
 }
 
 function ensureServiceView(account) {
@@ -235,6 +263,12 @@ function validateRendererEvent(event) {
   }
 }
 
+// Chamadas email:* vêm da janela principal ou da vista de leitura da própria conta.
+function validateEmailEvent(event, accountId) {
+  if (event.sender === mainWindow?.webContents) return;
+  if (event.sender !== viewsByAccountId.get(accountId)?.webContents) throw new Error('Pedido recusado.');
+}
+
 function setAccountDialogOpen(isOpen) {
   accountDialogOpen = isOpen;
   layoutViews();
@@ -295,24 +329,24 @@ function registerIpc() {
   });
 
   ipcMain.handle('email:list', (event, accountId, limit) => {
-    validateRendererEvent(event);
+    validateEmailEvent(event, accountId);
     return mail.listInbox(getEmailAccount(accountId), Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 200) : 50);
   });
 
   ipcMain.handle('email:get', (event, accountId, uid) => {
-    validateRendererEvent(event);
+    validateEmailEvent(event, accountId);
     return mail.getMessage(getEmailAccount(accountId), validUid(uid));
   });
 
   ipcMain.handle('email:markSeen', async (event, accountId, uid) => {
-    validateRendererEvent(event);
+    validateEmailEvent(event, accountId);
     await mail.markSeen(getEmailAccount(accountId), validUid(uid));
     void refreshEmailUnread();
   });
 
   // message: { to, cc, subject, text, inReplyTo?, references? } (to/cc: texto ou lista de textos).
   ipcMain.handle('email:send', (event, accountId, message) => {
-    validateRendererEvent(event);
+    validateEmailEvent(event, accountId);
     const account = getEmailAccount(accountId);
     const { to, cc, subject, text, inReplyTo, references } = message || {};
     const addresses = [to, cc].flat().filter((value) => value !== undefined && value !== '');
