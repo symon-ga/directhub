@@ -42,13 +42,11 @@ button { cursor: pointer; }
 .account.active { border-color: var(--edge); border-left-color: var(--orange); }
 .account-select { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 8px; color: inherit; background: transparent; border: 0; border-radius: 4px; text-align: left; }
 .account-select:hover .account-name { color: var(--orange); }
-.avatar { position: relative; display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; color: var(--black); background: var(--orange); border-radius: 50%; font-family: var(--mono); font-size: 14px; font-weight: 800; }
-.avatar::after { position: absolute; right: -5px; bottom: -4px; padding: 0 3px; color: var(--white); background: var(--black); border: 1px solid var(--muted); border-radius: 2px; font-size: 8px; font-weight: 700; letter-spacing: 0.02em; line-height: 12px; }
-.avatar.whatsapp::after { content: "WA"; }
-.avatar.instagram { color: var(--black); background: var(--white); border-radius: 10px; }
-.avatar.instagram::after { content: "IG"; }
-.avatar.email { color: var(--orange); background: var(--black); border: 2px solid var(--orange); border-radius: 4px; }
-.avatar.email::after { content: "@"; }
+/* Ícone do app de cada conta (assets/services: Simple Icons CC0, envelope do Lucide ISC). */
+.avatar { display: block; width: 34px; height: 34px; flex: 0 0 auto; background: var(--orange) center / 20px no-repeat; border-radius: 8px; }
+.avatar.whatsapp { background-color: #25d366; background-image: url("../../assets/services/whatsapp.svg"); border-radius: 50%; }
+.avatar.instagram { background-image: url("../../assets/services/instagram.svg"), linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5); background-size: 20px, cover; background-position: center; border-radius: 10px; }
+.avatar.email { background-image: url("../../assets/services/email.svg"); }
 .account-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
 .unread-count { min-width: 20px; padding: 2px 6px; color: var(--black); background: var(--orange); border-radius: 999px; font-family: var(--mono); font-size: 11px; font-weight: 800; text-align: center; }
 .remove-account { width: 28px; height: 28px; margin: 0 4px; color: var(--muted); background: transparent; border: 0; border-radius: 4px; font-size: 22px; line-height: 1; opacity: 0; }

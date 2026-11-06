@@ -29,7 +29,7 @@ function render() {
     selectButton.title = `Abrir ${account.label} (${{ instagram: 'Instagram', email: 'E-mail' }[account.service] || 'WhatsApp'})`;
     const avatar = document.createElement('span');
     avatar.className = `avatar ${account.service}`;
-    avatar.textContent = account.label.slice(0, 1).toUpperCase();
+    avatar.setAttribute('aria-hidden', 'true');
     const accountName = document.createElement('span');
     accountName.className = 'account-name';
     accountName.textContent = account.label;
