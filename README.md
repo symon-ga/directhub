@@ -4,6 +4,15 @@
 
 Hub de comunicação local-first: um invólucro local para várias sessões oficiais do WhatsApp Web e do Instagram Direct, com isolamento persistente por conta.
 
+## Baixar
+
+Versão 0.1.0 alpha:
+
+- **Windows 10/11 (x64):** [DirectHub-Setup-0.1.0-windows-x64.exe](https://github.com/symon-ga/directhub/releases/download/v0.1.0-alpha/DirectHub-Setup-0.1.0-windows-x64.exe)
+- **Mac com chip M (Apple Silicon):** [DirectHub-0.1.0-mac-arm64.dmg](https://github.com/symon-ga/directhub/releases/download/v0.1.0-alpha/DirectHub-0.1.0-mac-arm64.dmg)
+
+Os instaladores não têm certificado: veja os avisos de [Mac](#mac-com-chip-m-apple-silicon) e [Windows](#windows-alpha) abaixo. Notas e `SHA256SUMS.txt` na [página da versão](https://github.com/symon-ga/directhub/releases/tag/v0.1.0-alpha).
+
 ## Executar
 
 Requer Node.js 20+.
