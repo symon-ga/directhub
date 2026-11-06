@@ -2,8 +2,11 @@ const listEl = document.getElementById('list');
 const readerEl = document.getElementById('reader');
 const refreshBtn = document.getElementById('refresh');
 
+const { replySubject, parseRecipients, replyBody } = window.ComposePure;
+
 let messages = [];
 let openUid = null;
+let currentMessage = null;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -103,15 +106,17 @@ function headerRow(dl, label, value) {
 }
 
 function renderMessage(message) {
+  currentMessage = message;
   const head = el('header', 'msg-head');
   const top = el('div', 'msg-top');
   top.append(el('h1', 'msg-subject', message.subject || '(sem assunto)'));
   const actions = el('div', 'msg-actions');
-  actions.id = 'msg-actions'; // agente 3 liga Responder/Escrever aqui
+  actions.id = 'msg-actions';
   for (const [id, label] of [['reply', 'Responder'], ['compose', 'Escrever']]) {
     const b = el('button', 'btn', label);
     b.type = 'button';
     b.id = id;
+    b.addEventListener('click', () => (id === 'reply' ? openCompose(message) : openCompose()));
     actions.append(b);
   }
   top.append(actions);
@@ -169,6 +174,118 @@ async function openMessage(uid) {
     if (openUid === uid) readerEl.replaceChildren(el('p', 'placeholder', `Não foi possível abrir a mensagem: ${cleanError(error)}`));
   }
 }
+
+// Texto puro de um e-mail só-HTML: documento inerte (sem scripts, imagens nem estilos), só textContent.
+function htmlToText(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script, style, head').forEach((node) => node.remove());
+  doc.querySelectorAll('br').forEach((node) => node.replaceWith('\n'));
+  doc.querySelectorAll('p, div, li, tr, h1, h2, h3, h4, h5, h6, blockquote').forEach((node) => node.append('\n'));
+  return doc.body.textContent.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function showToast(text) {
+  const toast = el('div', 'toast', text);
+  toast.setAttribute('role', 'status');
+  document.body.append(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+function closeCompose() {
+  if (currentMessage) renderMessage(currentMessage);
+  else readerEl.replaceChildren(el('p', 'placeholder', 'Escolha uma mensagem para ler.'));
+}
+
+function field(labelText, control) {
+  const wrap = el('label', 'cfield');
+  wrap.append(el('span', 'cfield-label', labelText), control);
+  return wrap;
+}
+
+// Painel de composição na área de leitura. original = mensagem aberta, quando é uma resposta.
+function openCompose(original) {
+  const input = (value) => {
+    const node = el('input', 'cinput');
+    node.type = 'text';
+    node.autocomplete = 'off';
+    node.spellcheck = false;
+    node.value = value;
+    return node;
+  };
+  const to = input(original?.from?.address || '');
+  const cc = input('');
+  const subject = input(original ? replySubject(original.subject) : '');
+  subject.spellcheck = true;
+  const body = el('textarea', 'cbody');
+  body.value = original ? replyBody(original, original.text || htmlToText(original.html || '')) : '';
+  body.setAttribute('aria-label', 'Mensagem');
+  const status = el('span', 'cstatus');
+  status.setAttribute('role', 'alert');
+  const send = el('button', 'btn primary', 'Enviar');
+  send.type = 'button';
+  const cancel = el('button', 'btn', 'Cancelar');
+  cancel.type = 'button';
+  const bar = el('div', 'cbar');
+  bar.append(status, cancel, send);
+
+  const panel = el('form', 'compose');
+  panel.noValidate = true;
+  panel.append(
+    el('h1', 'msg-subject', original ? 'Responder' : 'Nova mensagem'),
+    field('Para', to), field('Cc', cc), field('Assunto', subject), body, bar
+  );
+  readerEl.replaceChildren(panel);
+  (original ? body : to).focus();
+  if (original) body.setSelectionRange(0, 0);
+
+  let emptyOk = false;
+  const fail = (text) => { status.textContent = text; status.className = 'cstatus error'; };
+  body.addEventListener('input', () => { emptyOk = false; status.textContent = ''; });
+
+  async function submit() {
+    if (send.disabled) return;
+    const toList = parseRecipients(to.value);
+    const ccList = parseRecipients(cc.value);
+    const invalid = [...toList.invalid, ...ccList.invalid];
+    if (invalid.length) return fail(`Endereço inválido: ${invalid.join(', ')}`);
+    if (!toList.list.length) return fail('Indique pelo menos um destinatário em Para.');
+    if (!body.value.trim() && !emptyOk) {
+      emptyOk = true;
+      status.className = 'cstatus';
+      status.textContent = 'A mensagem está vazia. Clique em Enviar de novo para enviar assim mesmo.';
+      return;
+    }
+    const payload = { to: toList.list, subject: subject.value, text: body.value };
+    if (ccList.list.length) payload.cc = ccList.list;
+    if (original?.messageId) {
+      payload.inReplyTo = original.messageId;
+      payload.references = Array.isArray(original.references) ? original.references.join(' ') : original.references || '';
+    }
+    send.disabled = true;
+    send.textContent = 'Enviando…';
+    status.textContent = '';
+    try {
+      await window.emailApi.send(payload);
+      showToast('Enviado');
+      closeCompose();
+    } catch (error) {
+      send.disabled = false;
+      send.textContent = 'Enviar';
+      fail(`Não foi possível enviar: ${cleanError(error)}`);
+    }
+  }
+
+  send.addEventListener('click', submit);
+  cancel.addEventListener('click', closeCompose);
+  panel.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      submit();
+    }
+  });
+}
+
+document.getElementById('new-mail').addEventListener('click', () => openCompose());
 
 refreshBtn.addEventListener('click', loadList);
 loadList();

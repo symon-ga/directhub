@@ -37,13 +37,33 @@
         <select id="account-service" name="service">
           <option value="whatsapp">WhatsApp</option>
           <option value="instagram">Instagram</option>
+          <option value="email">E-mail</option>
         </select>
         <label for="account-label">Nome da conta</label>
         <input id="account-label" name="label" autocomplete="off" maxlength="48" placeholder="Ex.: Trabalho" required />
+        <div id="email-fields" class="email-fields" hidden>
+          <label for="email-address">Endereço</label>
+          <input id="email-address" name="address" type="email" autocomplete="off" maxlength="254" placeholder="voce@gmail.com" disabled />
+          <label for="email-provider">Provedor</label>
+          <select id="email-provider" name="provider" disabled>
+            <option value="google">Google (Gmail)</option>
+            <option value="custom">Outro</option>
+          </select>
+          <div id="custom-hosts" hidden>
+            <label for="email-imap">Servidor IMAP</label>
+            <input id="email-imap" name="imapHost" autocomplete="off" maxlength="253" placeholder="imap.exemplo.com" disabled />
+            <label for="email-smtp">Servidor SMTP</label>
+            <input id="email-smtp" name="smtpHost" autocomplete="off" maxlength="253" placeholder="smtp.exemplo.com" disabled />
+          </div>
+          <label for="email-password">Senha de app</label>
+          <input id="email-password" name="password" type="password" autocomplete="off" disabled />
+          <p id="google-help" class="field-help">Use uma senha de app, não a sua senha. Ela exige a verificação em 2 etapas ligada. <a id="app-password-link" href="https://myaccount.google.com/apppasswords">Criar senha de app</a></p>
+          <p class="field-help mac-help">No Mac, deixe em branco para usar a senha guardada no Keychain.</p>
+        </div>
         <p id="form-error" class="form-error" role="alert"></p>
         <div class="dialog-actions">
           <button id="cancel-account" class="secondary" type="button">Cancelar</button>
-          <button type="submit">Adicionar</button>
+          <button id="submit-account" type="submit">Adicionar</button>
         </div>
       </form>
     </dialog>

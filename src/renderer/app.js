@@ -4,6 +4,10 @@ const dialog = document.querySelector('#account-dialog');
 const form = document.querySelector('#account-form');
 const labelInput = document.querySelector('#account-label');
 const serviceSelect = document.querySelector('#account-service');
+const emailFields = document.querySelector('#email-fields');
+const customHosts = document.querySelector('#custom-hosts');
+const providerSelect = document.querySelector('#email-provider');
+const submitButton = document.querySelector('#submit-account');
 const formError = document.querySelector('#form-error');
 const mediaAccessButton = document.querySelector('#media-access');
 const mediaStatus = document.querySelector('#media-status');
@@ -64,11 +68,36 @@ async function run(action) {
   }
 }
 
+// Campos de e-mail só aparecem (e só valem no formulário) com o serviço E-mail; hosts só com "Outro".
+function updateEmailFields() {
+  const isEmail = serviceSelect.value === 'email';
+  const isCustom = isEmail && providerSelect.value === 'custom';
+  emailFields.hidden = !isEmail;
+  customHosts.hidden = !isCustom;
+  for (const input of emailFields.querySelectorAll('input, select')) {
+    input.disabled = !isEmail || (customHosts.contains(input) && !isCustom);
+  }
+  document.querySelector('#email-address').required = isEmail;
+  document.querySelector('#email-imap').required = isCustom;
+  document.querySelector('#email-smtp').required = isCustom;
+  document.querySelector('#google-help').hidden = !isEmail || isCustom;
+  emailFields.querySelector('.mac-help').hidden = !isEmail || !navigator.platform.startsWith('Mac');
+}
+
+serviceSelect.addEventListener('change', updateEmailFields);
+providerSelect.addEventListener('change', updateEmailFields);
+
+document.querySelector('#app-password-link').addEventListener('click', (event) => {
+  event.preventDefault();
+  void window.directHub.openAppPasswordsPage();
+});
+
 async function openAccountDialog({ reset = true } = {}) {
   await window.directHub.setAccountDialogOpen(true);
   if (reset) {
     form.reset();
     formError.textContent = '';
+    updateEmailFields();
   }
   dialog.showModal();
   labelInput.focus();
@@ -84,10 +113,19 @@ dialog.addEventListener('close', () => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  const isEmail = serviceSelect.value === 'email';
+  const data = new FormData(form);
+  const fields = isEmail
+    ? Object.fromEntries(['address', 'provider', 'imapHost', 'smtpHost', 'password'].filter((name) => data.has(name)).map((name) => [name, data.get(name)]))
+    : undefined;
+  submitButton.disabled = true;
+  if (isEmail) submitButton.textContent = 'Conectando…';
   await run(async () => {
-    await window.directHub.addAccount(labelInput.value, serviceSelect.value);
+    await window.directHub.addAccount(labelInput.value, serviceSelect.value, fields);
     dialog.close();
   });
+  submitButton.disabled = false;
+  submitButton.textContent = 'Adicionar';
 });
 
 mediaAccessButton.addEventListener('click', () => void requestMediaAccess());

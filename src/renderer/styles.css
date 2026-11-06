@@ -69,6 +69,7 @@ button { cursor: pointer; }
 .empty-state p { color: var(--muted); line-height: 1.6; }
 
 dialog { width: min(410px, calc(100vw - 32px)); padding: 0; color: var(--white); background: var(--black); border: 1px solid var(--orange); border-radius: 6px; }
+dialog { max-height: calc(100vh - 32px); overflow-y: auto; }
 dialog::backdrop { background: rgb(0 0 0 / 70%); }
 dialog form { padding: 25px; }
 dialog h2 { margin: 0 0 6px; font-family: var(--mono); font-size: 20px; letter-spacing: -0.03em; }
@@ -78,6 +79,10 @@ dialog select { width: 100%; margin-bottom: 14px; padding: 11px 12px; color: var
 dialog input { width: 100%; padding: 11px 12px; color: var(--white); background: var(--black); border: 1px solid #6a6a6a; border-radius: 4px; }
 dialog input::placeholder { color: #8f8f8f; }
 dialog input:focus, dialog select:focus { border-color: var(--orange); outline: 2px solid var(--orange); outline-offset: 0; }
+.email-fields { margin-top: 14px; }
+.email-fields input { margin-bottom: 14px; }
+dialog p.field-help { margin: -6px 0 14px; font-size: 12px; line-height: 1.45; }
+dialog a { color: var(--orange); }
 .form-error { min-height: 20px; margin: 8px 0 0 !important; color: #ff9a4d !important; font-size: 12px !important; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .dialog-actions button { padding: 9px 14px; color: var(--black); background: var(--orange); border: 1px solid var(--orange); border-radius: 4px; font-weight: 800; }

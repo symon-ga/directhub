@@ -2,7 +2,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('directHub', {
   listAccounts: () => ipcRenderer.invoke('accounts:list'),
-  addAccount: (label, service) => ipcRenderer.invoke('accounts:add', label, service),
+  addAccount: (label, service, fields) => ipcRenderer.invoke('accounts:add', label, service, fields),
+  openAppPasswordsPage: () => ipcRenderer.invoke('ui:open-app-passwords'),
   activateAccount: (id) => ipcRenderer.invoke('accounts:activate', id),
   removeAccount: (id) => ipcRenderer.invoke('accounts:remove', id),
   setAccountDialogOpen: (isOpen) => ipcRenderer.invoke('ui:set-account-dialog-open', isOpen),

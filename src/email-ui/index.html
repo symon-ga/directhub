@@ -11,13 +11,17 @@
     <section class="list-pane" aria-label="Caixa de entrada">
       <header class="list-head">
         <span class="eyebrow">Caixa de entrada</span>
-        <button id="refresh" class="btn" type="button">Atualizar</button>
+        <span class="head-actions">
+          <button id="new-mail" class="btn" type="button">Escrever</button>
+          <button id="refresh" class="btn" type="button">Atualizar</button>
+        </span>
       </header>
       <div id="list" class="list" role="list"></div>
     </section>
     <main id="reader" class="reader" aria-live="polite">
       <p class="placeholder">Escolha uma mensagem para ler.</p>
     </main>
+    <script src="compose-pure.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

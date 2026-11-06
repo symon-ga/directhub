@@ -58,3 +58,19 @@ button { font: inherit; cursor: pointer; }
 
 .body-frame { flex: 1; width: 100%; min-height: 0; border: 0; background: var(--white); }
 .body-text { flex: 1; margin: 0; padding: 20px 24px; overflow: auto; color: #111; background: var(--white); font: 14px/1.55 ui-sans-serif, system-ui, sans-serif; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.head-actions { display: flex; gap: 8px; }
+.compose { display: flex; flex: 1; flex-direction: column; gap: 10px; min-height: 0; padding: 18px 24px; }
+.compose .msg-subject { margin-bottom: 4px; }
+.cfield { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 12px; }
+.cfield-label { color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+.cinput, .cbody { width: 100%; padding: 9px 11px; color: var(--white); background: var(--black); border: 1px solid #6a6a6a; border-radius: 4px; font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; }
+.cinput:focus, .cbody:focus { border-color: var(--orange); outline: 2px solid var(--orange); outline-offset: 0; }
+.cbody { flex: 1; min-height: 0; resize: none; }
+.cbar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.cstatus { flex: 1; color: var(--muted); font-size: 13px; }
+.cstatus.error { color: #ff6b4a; }
+.btn.primary { color: var(--black); background: var(--orange); }
+.btn.primary:hover { background: var(--white); border-color: var(--white); }
+.btn.primary:disabled { color: var(--muted); background: var(--black); }
+.toast { position: fixed; right: 24px; bottom: 24px; padding: 10px 16px; color: var(--black); background: var(--orange); border-radius: 4px; font-family: var(--mono); font-size: 12px; font-weight: 700; }

@@ -355,6 +355,12 @@ function registerIpc() {
     return mail.send(account, { to, cc, subject, text, inReplyTo, references });
   });
 
+  // Só este destino fixo: a página onde o Google cria senhas de app.
+  ipcMain.handle('ui:open-app-passwords', (event) => {
+    validateRendererEvent(event);
+    openExternal('https://myaccount.google.com/apppasswords');
+  });
+
   ipcMain.handle('ui:set-account-dialog-open', (event, isOpen) => {
     validateRendererEvent(event);
     if (typeof isOpen !== 'boolean') throw new Error('Estado de diálogo inválido.');

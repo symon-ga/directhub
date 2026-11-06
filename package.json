@@ -8,7 +8,7 @@
     "postinstall": "node scripts/dev-bundle-name.js",
     "prestart": "node scripts/dev-bundle-name.js",
     "start": "electron .",
-    "check": "node --check src/main.js && node --check src/services.js && node --check src/account-store.js && node --check src/preload.js && node --check src/whatsapp-preload.js && node --check src/instagram-preload.js && node --check src/email/pure.js && node --check src/email/secrets.js && node --check src/email/mail.js && node --check src/renderer/app.js && node --check src/email-ui/preload.js && node --check src/email-ui/app.js",
+    "check": "node --check src/main.js && node --check src/services.js && node --check src/account-store.js && node --check src/preload.js && node --check src/whatsapp-preload.js && node --check src/instagram-preload.js && node --check src/email/pure.js && node --check src/email/secrets.js && node --check src/email/mail.js && node --check src/renderer/app.js && node --check src/email-ui/preload.js && node --check src/email-ui/compose-pure.js && node --check src/email-ui/app.js",
     "test": "node --test",
     "dist:mac": "electron-builder --mac --arm64",
     "dist:win": "electron-builder --win --x64"
