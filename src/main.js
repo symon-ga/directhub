@@ -20,6 +20,13 @@ let accountDialogOpen = false;
 const viewsByAccountId = new Map();
 const unreadByAccountId = new Map();
 
+// Links leaving the services open in the default browser; other schemes (file:, custom app handlers) are dropped.
+function openExternal(url) {
+  try {
+    if (['https:', 'http:', 'mailto:'].includes(new URL(url).protocol)) shell.openExternal(url);
+  } catch {}
+}
+
 function getPartition(account) {
   return `persist:${account.service}-${account.id}`;
 }
@@ -96,12 +103,28 @@ function createServiceView(account) {
   const { webContents } = view;
   webContents.setUserAgent(COMPATIBLE_USER_AGENT);
   webContents.setWindowOpenHandler(({ url }) => {
+    // Gmail opens print, pop-out and compose in their own window; loading them here would replace the inbox.
+    if (service === 'gmail' && isAllowedUrl(service, url)) {
+      return { action: 'allow', overrideBrowserWindowOptions: { icon: APP_ICON, autoHideMenuBar: true } };
+    }
     if (isAllowedUrl(service, url)) {
       webContents.loadURL(url);
     } else if (!isTrustedUrl(service, url)) {
-      shell.openExternal(url);
+      openExternal(url);
     }
     return { action: 'deny' };
+  });
+  webContents.on('did-create-window', (child) => {
+    child.webContents.setUserAgent(COMPATIBLE_USER_AGENT);
+    child.webContents.setWindowOpenHandler(({ url }) => {
+      if (!isTrustedUrl(service, url)) openExternal(url);
+      return { action: 'deny' };
+    });
+    child.webContents.on('will-navigate', (event, url) => {
+      if (isAllowedUrl(service, url)) return;
+      event.preventDefault();
+      if (!isTrustedUrl(service, url)) openExternal(url);
+    });
   });
   webContents.on('will-navigate', (event, url) => {
     if (isAllowedUrl(service, url)) return;
@@ -109,11 +132,12 @@ function createServiceView(account) {
     if (isTrustedUrl(service, url)) {
       webContents.loadURL(config.url);
     } else {
-      shell.openExternal(url);
+      openExternal(url);
     }
   });
   webContents.on('will-redirect', (event, url) => {
-    if (isAllowedUrl(service, url)) return;
+    // Iframes (Google sign-in helpers, attachments) redirect on their own; only the page itself is restricted.
+    if (!event.isMainFrame || isAllowedUrl(service, url)) return;
     event.preventDefault();
     if (isTrustedUrl(service, url)) webContents.loadURL(config.url);
   });
@@ -251,7 +275,7 @@ function createMainWindow() {
     title: 'DirectHub',
     icon: APP_ICON,
     autoHideMenuBar: true,
-    backgroundColor: '#111210',
+    backgroundColor: '#000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

@@ -50,8 +50,12 @@ try {
     }
   }
 
+  // A run interrupted before signing leaves the stamps in place; the broken signature still triggers a re-sign.
+  if (!changed) {
+    try { run('codesign', ['--verify', bundle]); } catch { changed = true; }
+  }
   if (changed) {
-    run('codesign', ['--force', '--deep', '-s', '-', bundle]);
+    run('codesign',['--force', '--deep', '-s', '-', bundle]);
     try { run(LSREGISTER, ['-f', bundle]); } catch {}
   }
 } catch (err) {
