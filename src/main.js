@@ -248,7 +248,7 @@ function createMainWindow() {
     height: 920,
     minWidth: 960,
     minHeight: 640,
-    title: 'Direct Hub',
+    title: 'DirectHub',
     icon: APP_ICON,
     backgroundColor: '#111210',
     webPreferences: {
@@ -274,6 +274,11 @@ function createMainWindow() {
   const firstAccount = accountStore.list()[0];
   if (firstAccount) activateAccount(firstAccount.id);
 }
+
+// O nome do app deriva a pasta de dados; fixar a antiga mantém as sessões logadas.
+app.setName('DirectHub');
+app.setPath('userData', path.join(app.getPath('appData'), 'direct-hub'));
+if (process.platform === 'win32') app.setAppUserModelId('com.symonga.directhub');
 
 app.whenReady().then(async () => {
   accountStore = new AccountStore(path.join(app.getPath('userData'), 'accounts.json'));

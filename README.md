@@ -1,6 +1,6 @@
-<p align="center"><img src="assets/banner.png" alt="Direct Hub" width="720"></p>
+<p align="center"><img src="assets/banner.png" alt="DirectHub" width="720"></p>
 
-# Direct Hub
+# DirectHub
 
 Hub de comunicação local-first: um invólucro local para várias sessões oficiais do WhatsApp Web e do Instagram Direct, com isolamento persistente por conta.
 
@@ -20,7 +20,7 @@ Cada conta recebe uma partição Electron própria (`persist:<serviço>-<UUID>`)
 Roda nativo em arm64 (M1, M2, M3, M4); o código não tem módulos nativos, só o Electron.
 
 - Do código-fonte: `npm install && npm start`.
-- Instalador: `npm run dist:mac` gera `dist/Direct Hub-<versão>-arm64.dmg`. O app sai com assinatura ad-hoc, sem certificado Apple. Se o macOS disser que o app está danificado ao abrir um `.dmg` baixado, rode `xattr -cr "/Applications/Direct Hub.app"`.
+- Instalador: `npm run dist:mac` gera `dist/DirectHub-<versão>-arm64.dmg`. O app sai com assinatura ad-hoc, sem certificado Apple. Se o macOS disser que o app está danificado ao abrir um `.dmg` baixado, rode `xattr -cr "/Applications/DirectHub.app"`.
 
 ## Segurança aplicada
 

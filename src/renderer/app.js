@@ -99,7 +99,7 @@ async function requestMediaAccess() {
     const access = await window.directHub.requestMediaAccess();
     const denied = [access.camera, access.microphone].some((status) => status === 'denied' || status === 'restricted');
     if (denied) {
-      mediaStatus.textContent = 'Acesse Definições do Sistema › Privacidade e Segurança para liberar o Direct Hub.';
+      mediaStatus.textContent = 'Acesse Definições do Sistema › Privacidade e Segurança para liberar o DirectHub.';
     } else if (access.camera === 'requested-in-call') {
       mediaStatus.textContent = 'A permissão será solicitada ao iniciar uma chamada.';
     } else {
