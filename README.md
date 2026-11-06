@@ -22,6 +22,16 @@ Roda nativo em arm64 (M1, M2, M3, M4); o código não tem módulos nativos, só 
 - Do código-fonte: `npm install && npm start`.
 - Instalador: `npm run dist:mac` gera `dist/DirectHub-<versão>-arm64.dmg`. O app sai com assinatura ad-hoc, sem certificado Apple. Se o macOS disser que o app está danificado ao abrir um `.dmg` baixado, rode `xattr -cr "/Applications/DirectHub.app"`.
 
+## Windows (alpha)
+
+Versão alpha para Windows 10/11 de 64 bits (x64). O código não tem módulos nativos, só o Electron.
+
+- Do código-fonte: `npm install && npm start`.
+- Instalador: `npm run dist:win` gera `dist/DirectHub Setup <versão>.exe` (NSIS; deixa escolher a pasta e cria atalhos DirectHub na área de trabalho e no menu Iniciar).
+- O instalador não tem assinatura de código (não há certificado). Ao abrir, o SmartScreen pode avisar "O Windows protegeu o computador": clique em "Mais informações" e depois em "Executar assim mesmo".
+- A barra de menu fica escondida; aperte Alt para mostrá-la. Só uma janela do app abre por vez: abrir de novo traz a existente para a frente.
+- Ainda não foi testado em um Windows real.
+
 ## Segurança aplicada
 
 - Cada conteúdo remoto usa `WebContentsView`; não há tag `<webview>` nem APIs WhatsApp não oficiais.

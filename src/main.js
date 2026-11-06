@@ -250,6 +250,7 @@ function createMainWindow() {
     minHeight: 640,
     title: 'DirectHub',
     icon: APP_ICON,
+    autoHideMenuBar: true,
     backgroundColor: '#111210',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -280,7 +281,20 @@ app.setName('DirectHub');
 app.setPath('userData', path.join(app.getPath('appData'), 'direct-hub'));
 if (process.platform === 'win32') app.setAppUserModelId('com.symonga.directhub');
 
+// Duas instâncias na mesma userData brigam pelas partições: a segunda só foca a primeira.
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  });
+}
+
 app.whenReady().then(async () => {
+  if (!app.hasSingleInstanceLock()) return;
   accountStore = new AccountStore(path.join(app.getPath('userData'), 'accounts.json'));
   await accountStore.load();
   if (process.platform === 'darwin') app.dock.setIcon(APP_ICON);

@@ -10,7 +10,8 @@
     "start": "electron .",
     "check": "node --check src/main.js && node --check src/services.js && node --check src/account-store.js && node --check src/preload.js && node --check src/whatsapp-preload.js && node --check src/instagram-preload.js && node --check src/gmail-preload.js && node --check src/renderer/app.js",
     "test": "node --test",
-    "dist:mac": "electron-builder --mac --arm64"
+    "dist:mac": "electron-builder --mac --arm64",
+    "dist:win": "electron-builder --win --x64"
   },
   "devDependencies": {
     "electron": "44.4.3",
@@ -39,6 +40,24 @@
       ],
       "identity": "-",
       "hardenedRuntime": false
+    },
+    "win": {
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DirectHub"
     }
   }
 }
