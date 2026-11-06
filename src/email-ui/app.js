@@ -97,7 +97,7 @@ function cleanError(error) {
 function frameDoc(html, withImages) {
   const img = withImages ? 'data: cid: https:' : 'data: cid:';
   const csp = `default-src 'none'; style-src 'unsafe-inline'; img-src ${img}; script-src 'none'; object-src 'none'; form-action 'none'; font-src 'none'; frame-src 'none'`;
-  return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><style>body{margin:16px;font-family:system-ui,sans-serif;color:#111;background:#fff;overflow-wrap:anywhere}img{max-width:100%;height:auto}</style></head><body>${html}</body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="x-dns-prefetch-control" content="off"><meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><style>body{margin:16px;font-family:system-ui,sans-serif;color:#111;background:#fff;overflow-wrap:anywhere}img{max-width:100%;height:auto}</style></head><body>${html}</body></html>`;
 }
 
 function headerRow(dl, label, value) {
@@ -212,7 +212,8 @@ function openCompose(original) {
     node.value = value;
     return node;
   };
-  const to = input(original?.from?.address || '');
+  // Formulários e listas mandam a resposta para o Reply-To, não para o remetente.
+  const to = input(original?.replyTo?.[0]?.address || original?.from?.address || '');
   const cc = input('');
   const subject = input(original ? replySubject(original.subject) : '');
   subject.spellcheck = true;

@@ -26,7 +26,7 @@ function render() {
     const selectButton = document.createElement('button');
     selectButton.className = 'account-select';
     selectButton.type = 'button';
-    selectButton.title = `Abrir ${account.label} (${{ instagram: 'Instagram' }[account.service] || 'WhatsApp'})`;
+    selectButton.title = `Abrir ${account.label} (${{ instagram: 'Instagram', email: 'E-mail' }[account.service] || 'WhatsApp'})`;
     const avatar = document.createElement('span');
     avatar.className = `avatar ${account.service}`;
     avatar.textContent = account.label.slice(0, 1).toUpperCase();

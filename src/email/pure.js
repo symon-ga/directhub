@@ -42,7 +42,7 @@ function resolveHosts(account) {
 
 function replySubject(subject) {
   const text = String(subject || '').trim();
-  return /^re:/i.test(text) ? text : `Re: ${text}`.trim();
+  return /^res?:/i.test(text) ? text : `Re: ${text}`.trim();
 }
 
 function quoteText(text) {

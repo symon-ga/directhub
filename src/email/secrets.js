@@ -37,7 +37,7 @@ async function getSecret(account) {
   if (stored) return safeStorage.decryptString(Buffer.from(stored, 'base64'));
   if (process.platform !== 'darwin') return null;
   try {
-    const { stdout } = await run('security', ['find-generic-password', '-a', account.address, '-s', 'directhub-imap', '-w']);
+    const { stdout } = await run('/usr/bin/security', ['find-generic-password', '-a', account.address, '-s', 'directhub-imap', '-w']);
     return stdout.replace(/\n$/, '') || null;
   } catch {
     return null;

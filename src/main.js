@@ -1,5 +1,6 @@
 const { app, BrowserWindow, WebContentsView, ipcMain, session, shell, systemPreferences } = require('electron');
 const path = require('node:path');
+const fs = require('node:fs/promises');
 const { AccountStore } = require('./account-store');
 const { SERVICES, isTrustedUrl, isAllowedUrl } = require('./services');
 const secrets = require('./email/secrets');
@@ -245,13 +246,21 @@ function validUid(uid) {
 }
 
 // Sem IDLE na v0: STATUS da caixa de entrada a cada minuto enquanto o app está aberto.
+// Senha recusada para a consulta automática (o Gmail bloqueia o IMAP depois de muitas falhas);
+// volta quando a conta abre a caixa de novo com sucesso.
+const emailAuthFailed = new Set();
+
 async function refreshEmailUnread() {
-  const accounts = accountStore.list().filter((account) => account.service === 'email');
+  const accounts = accountStore.list().filter((account) => account.service === 'email' && !emailAuthFailed.has(account.id));
   await Promise.all(
     accounts.map(async (account) => {
       try {
-        unreadByAccountId.set(account.id, await mail.unreadCount(account));
-      } catch {}
+        const count = await mail.unreadCount(account);
+        if (!getAccount(account.id)) return mail.closeConnection(account.id);
+        unreadByAccountId.set(account.id, count);
+      } catch (error) {
+        if (error.authenticationFailed) emailAuthFailed.add(account.id);
+      }
     })
   );
   sendAccountsChanged();
@@ -328,9 +337,11 @@ function registerIpc() {
     await deleteAccount(id);
   });
 
-  ipcMain.handle('email:list', (event, accountId, limit) => {
+  ipcMain.handle('email:list', async (event, accountId, limit) => {
     validateEmailEvent(event, accountId);
-    return mail.listInbox(getEmailAccount(accountId), Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 200) : 50);
+    const messages = await mail.listInbox(getEmailAccount(accountId), Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 200) : 50);
+    emailAuthFailed.delete(accountId);
+    return messages;
   });
 
   ipcMain.handle('email:get', (event, accountId, uid) => {
@@ -438,6 +449,10 @@ app.whenReady().then(async () => {
   if (!app.hasSingleInstanceLock()) return;
   accountStore = new AccountStore(path.join(app.getPath('userData'), 'accounts.json'));
   await accountStore.load();
+  // O Gmail em webview foi descartado; seus cookies do Google não ficam no disco.
+  const partitionsDir = path.join(app.getPath('userData'), 'Partitions');
+  const stale = await fs.readdir(partitionsDir).catch(() => []);
+  await Promise.all(stale.filter((name) => name.startsWith('gmail-')).map((name) => fs.rm(path.join(partitionsDir, name), { recursive: true, force: true })));
   if (process.platform === 'darwin') app.dock.setIcon(APP_ICON);
   registerIpc();
   createMainWindow();
@@ -447,6 +462,12 @@ app.whenReady().then(async () => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
   });
+});
+
+app.on('before-quit', () => {
+  for (const account of accountStore?.list() || []) {
+    if (account.service === 'email') void mail.closeConnection(account.id);
+  }
 });
 
 app.on('window-all-closed', () => {

@@ -23,6 +23,8 @@ async function getClient(account) {
       port: imapPort,
       secure: true,
       auth: { user: account.address, pass },
+      // Socket meio aberto depois de trocar de rede: desiste em 90 s, não nos 5 min padrão.
+      socketTimeout: 90_000,
       logger: false
     });
     // Sem ouvinte, um erro de socket derruba o processo principal.
@@ -101,6 +103,7 @@ async function getMessage(account, uid) {
     from: toPerson(parsed.from?.value?.[0]),
     to: people(parsed.to),
     cc: people(parsed.cc),
+    replyTo: people(parsed.replyTo),
     subject: parsed.subject || '',
     date: parsed.date ? parsed.date.toISOString() : null,
     text: parsed.text || '',

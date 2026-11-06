@@ -5,7 +5,7 @@
   // Mesma regra do main (src/email/pure.js): um único "Re: ".
   function replySubject(subject) {
     const text = String(subject || '').trim();
-    return /^re:/i.test(text) ? text : `Re: ${text}`.trim();
+    return /^res?:/i.test(text) ? text : `Re: ${text}`.trim();
   }
 
   function quoteText(text) {

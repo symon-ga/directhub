@@ -4,8 +4,9 @@ const { replySubject: mainSubject } = require('../src/email/pure');
 const { replySubject, quoteText, parseRecipients, replyHeader, replyBody } = require('../src/email-ui/compose-pure');
 
 test('reply subject on screen follows the main rule', () => {
-  for (const s of ['Olá', 'Re: Olá', 'RE: Olá', '', '  Olá ']) assert.equal(replySubject(s), mainSubject(s));
+  for (const s of ['Olá', 'Re: Olá', 'RE: Olá', 'RES: Olá', '', '  Olá ']) assert.equal(replySubject(s), mainSubject(s));
   assert.equal(replySubject('Olá'), 'Re: Olá');
+  assert.equal(replySubject('RES: Olá'), 'RES: Olá');
 });
 
 test('parses recipients separated by comma or semicolon', () => {
