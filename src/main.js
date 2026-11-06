@@ -312,13 +312,17 @@ function registerIpc() {
     const account = await accountStore.add(label, service, emailFields);
     if (service === 'email') {
       try {
-        if (password) await secrets.setSecret(account.id, password);
+        // Colar da página do Google costuma trazer espaço ou quebra de linha nas pontas.
+        if (password?.trim()) await secrets.setSecret(account.id, password.trim());
         await mail.unreadCount(account);
       } catch (error) {
         await mail.closeConnection(account.id);
         await secrets.removeSecret(account.id).catch(() => {});
         await accountStore.remove(account.id);
-        throw new Error(`Não foi possível entrar na caixa de e-mail: ${error.message}`);
+        const reason = error.authenticationFailed
+          ? 'o servidor recusou o endereço ou a senha de app. Confira os dois (no Mac, com a senha em branco, vale a do Keychain).'
+          : error.responseText || error.message;
+        throw new Error(`Não foi possível entrar na caixa de e-mail: ${reason}`);
       }
       void refreshEmailUnread();
     }
