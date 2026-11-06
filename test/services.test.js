@@ -29,3 +29,23 @@ test('WhatsApp keeps every path on its own host', () => {
   assert.equal(isAllowedUrl('whatsapp', 'https://web.whatsapp.com/qualquer'), true);
   assert.equal(isAllowedUrl('whatsapp', 'https://www.instagram.com/direct/'), false);
 });
+
+test('Gmail trusts only Gmail and Google sign-in over https', () => {
+  for (const url of [
+    'https://mail.google.com/mail/u/0/',
+    'https://mail.google.com/mail/u/0/#inbox/abc',
+    'https://accounts.google.com/v3/signin/identifier'
+  ]) {
+    assert.equal(isTrustedUrl('gmail', url), true, url);
+    assert.equal(isAllowedUrl('gmail', url), true, url);
+  }
+  for (const url of [
+    'https://evil.com/mail.google.com/',
+    'https://mail.google.com.evil.com/',
+    'https://www.google.com/',
+    'http://mail.google.com/mail/u/0/'
+  ]) {
+    assert.equal(isTrustedUrl('gmail', url), false, url);
+    assert.equal(isAllowedUrl('gmail', url), false, url);
+  }
+});

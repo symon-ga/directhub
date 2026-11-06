@@ -3,7 +3,7 @@ const { mkdir, readFile, rename, writeFile } = require('node:fs/promises');
 const path = require('node:path');
 
 const MAX_LABEL_LENGTH = 48;
-const SERVICES = ['whatsapp', 'instagram'];
+const SERVICES = ['whatsapp', 'instagram', 'gmail'];
 
 function normalizeLabel(value) {
   if (typeof value !== 'string') {

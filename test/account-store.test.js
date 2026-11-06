@@ -47,3 +47,15 @@ test('treats accounts saved without a service as WhatsApp', async () => {
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('accepts Gmail as a service and rejects unknown ones', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'direct-hub-'));
+  try {
+    const store = new AccountStore(path.join(directory, 'accounts.json'));
+    await store.load();
+    assert.equal((await store.add('Pessoal', 'gmail')).service, 'gmail');
+    await assert.rejects(store.add('X', 'outlook'), /Serviço desconhecido/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

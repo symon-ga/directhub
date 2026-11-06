@@ -6,7 +6,7 @@ const { SERVICES, isTrustedUrl, isAllowedUrl } = require('./services');
 const SIDEBAR_WIDTH = 268;
 // App icon (assets/icon.png).
 const APP_ICON = path.join(__dirname, '..', 'assets', 'icon.png');
-// WhatsApp Web and Instagram reject Electron's product token even when its Chromium version is current.
+// WhatsApp Web, Instagram and Gmail reject Electron's product token even when its Chromium version is current.
 // This matches the Chromium engine bundled with Electron 44 and is used only by the service views.
 const COMPATIBLE_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36';

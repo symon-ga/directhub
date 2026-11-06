@@ -31,6 +31,7 @@ button { cursor: pointer; }
 .account-select { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 8px; color: inherit; background: transparent; border: 0; text-align: left; }
 .account-select:hover { color: #d8f36f; }
 .avatar.instagram { color: #fff; background: #c13584; }
+.avatar.gmail { color: #fff; background: #d93025; }
 .avatar { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; color: #151610; background: #d8f36f; border-radius: 50%; font-size: 13px; font-weight: 800; }
 .account-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
 .unread-count { min-width: 19px; padding: 2px 5px; color: #14150f; background: #d8f36f; border-radius: 999px; font-size: 11px; font-weight: 800; text-align: center; }
