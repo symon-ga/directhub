@@ -1,9 +1,10 @@
 const { randomUUID } = require('node:crypto');
 const { mkdir, readFile, rename, writeFile } = require('node:fs/promises');
 const path = require('node:path');
+const { normalizeEmailFields } = require('./email/pure');
 
 const MAX_LABEL_LENGTH = 48;
-const SERVICES = ['whatsapp', 'instagram', 'gmail'];
+const SERVICES = ['whatsapp', 'instagram', 'email'];
 
 function normalizeLabel(value) {
   if (typeof value !== 'string') {
@@ -49,12 +50,15 @@ class AccountStore {
       const content = await readFile(this.filePath, 'utf8');
       const parsed = JSON.parse(content);
       this.accounts = Array.isArray(parsed.accounts)
-        ? parsed.accounts.filter(isStoredAccount).map((account) => ({
-            ...account,
-            label: normalizeLabel(account.label),
-            // Accounts saved before Instagram support are WhatsApp sessions.
-            service: SERVICES.includes(account.service) ? account.service : 'whatsapp'
-          }))
+        ? parsed.accounts
+            // O Gmail em webview foi bloqueado pelo Google no login e nunca funcionou.
+            .filter((account) => isStoredAccount(account) && account.service !== 'gmail')
+            .map((account) => ({
+              ...account,
+              label: normalizeLabel(account.label),
+              // Accounts saved before Instagram support are WhatsApp sessions.
+              service: SERVICES.includes(account.service) ? account.service : 'whatsapp'
+            }))
         : [];
     } catch (error) {
       if (error.code === 'ENOENT') {
@@ -72,11 +76,13 @@ class AccountStore {
     return this.accounts.map((account) => ({ ...account }));
   }
 
-  async add(label, service) {
+  // fields: address, provider, imapHost, smtpHost (só para service 'email'; a senha nunca passa por aqui).
+  async add(label, service, fields) {
     const account = {
       id: randomUUID(),
       label: normalizeLabel(label),
       service: normalizeService(service),
+      ...(service === 'email' ? normalizeEmailFields(fields) : {}),
       createdAt: new Date().toISOString()
     };
     this.accounts.push(account);

@@ -2,11 +2,13 @@ const { app, BrowserWindow, WebContentsView, ipcMain, session, shell, systemPref
 const path = require('node:path');
 const { AccountStore } = require('./account-store');
 const { SERVICES, isTrustedUrl, isAllowedUrl } = require('./services');
+const secrets = require('./email/secrets');
+const mail = require('./email/mail');
 
 const SIDEBAR_WIDTH = 268;
 // App icon (assets/icon.png).
 const APP_ICON = path.join(__dirname, '..', 'assets', 'icon.png');
-// WhatsApp Web, Instagram and Gmail reject Electron's product token even when its Chromium version is current.
+// WhatsApp Web and Instagram reject Electron's product token even when its Chromium version is current.
 // This matches the Chromium engine bundled with Electron 44 and is used only by the service views.
 const COMPATIBLE_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36';
@@ -19,6 +21,8 @@ let accountDialogOpen = false;
 
 const viewsByAccountId = new Map();
 const unreadByAccountId = new Map();
+
+const EMAIL_POLL_MS = 60_000;
 
 // Links leaving the services open in the default browser; other schemes (file:, custom app handlers) are dropped.
 function openExternal(url) {
@@ -103,10 +107,6 @@ function createServiceView(account) {
   const { webContents } = view;
   webContents.setUserAgent(COMPATIBLE_USER_AGENT);
   webContents.setWindowOpenHandler(({ url }) => {
-    // Gmail opens print, pop-out and compose in their own window; loading them here would replace the inbox.
-    if (service === 'gmail' && isAllowedUrl(service, url)) {
-      return { action: 'allow', overrideBrowserWindowOptions: { icon: APP_ICON, autoHideMenuBar: true } };
-    }
     if (isAllowedUrl(service, url)) {
       webContents.loadURL(url);
     } else if (!isTrustedUrl(service, url)) {
@@ -158,7 +158,14 @@ function createServiceView(account) {
   return view;
 }
 
+// Contas de e-mail não usam página web: o leitor é uma vista local (HTML do app).
+// TODO agente 2: criar aqui a vista local do leitor e devolvê-la (viewsByAccountId já cuida de layout e visibilidade).
+function createEmailView() {
+  return null;
+}
+
 function ensureServiceView(account) {
+  if (account.service === 'email') return createEmailView(account);
   return viewsByAccountId.get(account.id) || createServiceView(account);
 }
 
@@ -180,7 +187,12 @@ async function deleteAccount(id) {
     view.webContents.close();
     viewsByAccountId.delete(id);
   }
-  await session.fromPartition(getPartition(account)).clearStorageData();
+  if (account.service === 'email') {
+    await mail.closeConnection(id);
+    await secrets.removeSecret(id);
+  } else {
+    await session.fromPartition(getPartition(account)).clearStorageData();
+  }
   unreadByAccountId.delete(id);
   await accountStore.remove(id);
 
@@ -190,6 +202,30 @@ async function deleteAccount(id) {
     if (nextAccount) ensureServiceView(nextAccount);
   }
   layoutViews();
+  sendAccountsChanged();
+}
+
+function getEmailAccount(id) {
+  const account = getAccount(id);
+  if (!account || account.service !== 'email') throw new Error('Conta de e-mail não encontrada.');
+  return account;
+}
+
+function validUid(uid) {
+  if (!Number.isSafeInteger(uid) || uid < 1) throw new Error('Mensagem inválida.');
+  return uid;
+}
+
+// Sem IDLE na v0: STATUS da caixa de entrada a cada minuto enquanto o app está aberto.
+async function refreshEmailUnread() {
+  const accounts = accountStore.list().filter((account) => account.service === 'email');
+  await Promise.all(
+    accounts.map(async (account) => {
+      try {
+        unreadByAccountId.set(account.id, await mail.unreadCount(account));
+      } catch {}
+    })
+  );
   sendAccountsChanged();
 }
 
@@ -226,9 +262,23 @@ function registerIpc() {
     return getAccountsForRenderer();
   });
 
-  ipcMain.handle('accounts:add', async (event, label, service) => {
+  // fields (só e-mail): { address, provider, imapHost, smtpHost, password }. A senha vai direto para o cofre.
+  ipcMain.handle('accounts:add', async (event, label, service, fields) => {
     validateRendererEvent(event);
-    const account = await accountStore.add(label, service);
+    const { password, ...emailFields } = fields || {};
+    const account = await accountStore.add(label, service, emailFields);
+    if (service === 'email') {
+      try {
+        if (password) await secrets.setSecret(account.id, password);
+        await mail.unreadCount(account);
+      } catch (error) {
+        await mail.closeConnection(account.id);
+        await secrets.removeSecret(account.id).catch(() => {});
+        await accountStore.remove(account.id);
+        throw new Error(`Não foi possível entrar na caixa de e-mail: ${error.message}`);
+      }
+      void refreshEmailUnread();
+    }
     activateAccount(account.id);
     return account;
   });
@@ -242,6 +292,33 @@ function registerIpc() {
     validateRendererEvent(event);
     if (!getAccount(id)) throw new Error('Conta não encontrada.');
     await deleteAccount(id);
+  });
+
+  ipcMain.handle('email:list', (event, accountId, limit) => {
+    validateRendererEvent(event);
+    return mail.listInbox(getEmailAccount(accountId), Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 200) : 50);
+  });
+
+  ipcMain.handle('email:get', (event, accountId, uid) => {
+    validateRendererEvent(event);
+    return mail.getMessage(getEmailAccount(accountId), validUid(uid));
+  });
+
+  ipcMain.handle('email:markSeen', async (event, accountId, uid) => {
+    validateRendererEvent(event);
+    await mail.markSeen(getEmailAccount(accountId), validUid(uid));
+    void refreshEmailUnread();
+  });
+
+  // message: { to, cc, subject, text, inReplyTo?, references? } (to/cc: texto ou lista de textos).
+  ipcMain.handle('email:send', (event, accountId, message) => {
+    validateRendererEvent(event);
+    const account = getEmailAccount(accountId);
+    const { to, cc, subject, text, inReplyTo, references } = message || {};
+    const addresses = [to, cc].flat().filter((value) => value !== undefined && value !== '');
+    if (!to || !addresses.every((value) => typeof value === 'string' && value.length <= 998)) throw new Error('Indique o destinatário.');
+    if (typeof subject !== 'string' || typeof text !== 'string') throw new Error('Mensagem inválida.');
+    return mail.send(account, { to, cc, subject, text, inReplyTo, references });
   });
 
   ipcMain.handle('ui:set-account-dialog-open', (event, isOpen) => {
@@ -324,6 +401,8 @@ app.whenReady().then(async () => {
   if (process.platform === 'darwin') app.dock.setIcon(APP_ICON);
   registerIpc();
   createMainWindow();
+  void refreshEmailUnread();
+  setInterval(refreshEmailUnread, EMAIL_POLL_MS);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();

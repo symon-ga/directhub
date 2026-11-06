@@ -48,13 +48,39 @@ test('treats accounts saved without a service as WhatsApp', async () => {
   }
 });
 
-test('accepts Gmail as a service and rejects unknown ones', async () => {
+test('discards old Gmail webview accounts on load', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'direct-hub-'));
+  const filePath = path.join(directory, 'accounts.json');
+
   try {
-    const store = new AccountStore(path.join(directory, 'accounts.json'));
+    const gmail = { id: '7c9e6679-7425-40de-944b-e07fc1f90ae8', label: 'Gmail', service: 'gmail', createdAt: '2026-09-23T12:00:00.000Z' };
+    const legacy = { id: '7c9e6679-7425-40de-944b-e07fc1f90ae7', label: 'Pessoal', createdAt: '2026-09-23T12:00:00.000Z' };
+    await writeFile(filePath, JSON.stringify({ version: 1, accounts: [gmail, legacy] }));
+
+    const store = new AccountStore(filePath);
     await store.load();
-    assert.equal((await store.add('Pessoal', 'gmail')).service, 'gmail');
-    await assert.rejects(store.add('X', 'outlook'), /Serviço desconhecido/);
+    assert.deepEqual(store.list().map((account) => account.service), ['whatsapp']);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('stores email accounts with address and provider, never a password', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'direct-hub-'));
+  const filePath = path.join(directory, 'accounts.json');
+
+  try {
+    const store = new AccountStore(filePath);
+    await store.load();
+    const google = await store.add('Pessoal', 'email', { address: 'a@gmail.com', password: 'segredo' });
+    assert.equal(google.service, 'email');
+    assert.equal(google.provider, 'google');
+    const custom = await store.add('Outro', 'email', { address: 'b@exemplo.com.br', provider: 'custom', imapHost: 'imap.exemplo.com.br', smtpHost: 'smtp.exemplo.com.br' });
+    assert.equal(custom.imapHost, 'imap.exemplo.com.br');
+    assert.doesNotMatch(await readFile(filePath, 'utf8'), /segredo/);
+    await assert.rejects(store.add('X', 'email', { address: 'sem-arroba' }), /e-mail válido/);
+    await assert.rejects(store.add('X', 'email', { address: 'c@x.com', provider: 'custom', imapHost: 'ruim host' }), /IMAP/);
+    await assert.rejects(store.add('X', 'gmail'), /Serviço desconhecido/);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

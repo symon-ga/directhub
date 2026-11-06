@@ -27,13 +27,6 @@ const SERVICES = {
     isAllowedPath: (pathname) => INSTAGRAM_PATHS.some((prefix) => pathname.startsWith(prefix)),
     preload: 'instagram-preload.js',
     css: `${INSTAGRAM_HIDDEN.join(', ')} { display: none !important; }`
-  },
-  // Gmail plus Google's sign-in page (accounts.google.com), which the login redirects through.
-  gmail: {
-    url: 'https://mail.google.com/mail/u/0/',
-    isTrustedHost: (hostname) => hostname === 'mail.google.com' || hostname === 'accounts.google.com',
-    isAllowedPath: () => true,
-    preload: 'gmail-preload.js'
   }
 };
 
