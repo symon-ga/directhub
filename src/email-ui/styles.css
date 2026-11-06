@@ -24,6 +24,7 @@ button { font: inherit; cursor: pointer; }
 .list-pane { display: flex; flex: 0 0 360px; flex-direction: column; min-width: 0; border-right: 1px solid var(--edge); }
 .list-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px; border-bottom: 1px solid var(--edge); }
 .list { flex: 1; overflow-y: auto; }
+.list .more { display: block; width: calc(100% - 32px); margin: 12px 16px 20px; }
 
 .row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 0 8px; align-items: center; width: 100%; padding: 12px 16px; color: inherit; text-align: left; background: var(--black); border: 0; border-bottom: 1px solid var(--edge); border-left: 3px solid transparent; }
 .row:hover { background: #111; }

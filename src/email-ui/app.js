@@ -4,7 +4,9 @@ const refreshBtn = document.getElementById('refresh');
 
 const { replySubject, parseRecipients, replyBody } = window.ComposePure;
 
+const PAGE = 50;
 let messages = [];
+let hasOlder = false;
 let openUid = null;
 let currentMessage = null;
 
@@ -75,13 +77,39 @@ function renderList() {
     row.addEventListener('click', () => openMessage(message.uid));
     return row;
   }));
+  if (hasOlder) {
+    const more = el('button', 'btn more', 'Carregar mais');
+    more.type = 'button';
+    more.addEventListener('click', () => loadOlder(more));
+    listEl.append(more);
+  }
+}
+
+// Mais 50 mensagens antigas, a partir da menor UID já na lista.
+async function loadOlder(button) {
+  button.disabled = true;
+  button.textContent = 'Carregando…';
+  try {
+    const oldest = Math.min(...messages.map((message) => message.uid));
+    const older = await window.emailApi.list(PAGE, oldest);
+    const known = new Set(messages.map((message) => message.uid));
+    messages = messages.concat(older.filter((message) => !known.has(message.uid)));
+    hasOlder = older.length === PAGE;
+    const scroll = listEl.scrollTop;
+    renderList();
+    listEl.scrollTop = scroll;
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = `Tentar de novo (${cleanError(error)})`;
+  }
 }
 
 async function loadList() {
   refreshBtn.disabled = true;
   showListState('Carregando…');
   try {
-    messages = await window.emailApi.list(50);
+    messages = await window.emailApi.list(PAGE);
+    hasOlder = messages.length === PAGE;
     renderList();
   } catch (error) {
     showListState(`Não foi possível falar com o servidor: ${cleanError(error)}`, true);

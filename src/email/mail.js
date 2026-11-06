@@ -68,15 +68,24 @@ async function unreadCount(account) {
   return unseen;
 }
 
-async function listInbox(account, limit = 50) {
+// beforeUid: página anterior ("Carregar mais"), as `limit` mensagens com UID menor que ele.
+async function listInbox(account, limit = 50, beforeUid = 0) {
   return withInbox(account, async (client) => {
     // A conexão fica aberta: o NOOP traz mensagens chegadas desde a última chamada.
     await client.noop();
     const total = client.mailbox.exists;
     if (!total) return [];
-    const start = Math.max(1, total - limit + 1);
+    let range = `${Math.max(1, total - limit + 1)}:*`;
+    let byUid = false;
+    if (beforeUid) {
+      if (beforeUid <= 1) return [];
+      const older = (await client.search({ uid: `1:${beforeUid - 1}` }, { uid: true })) || [];
+      if (!older.length) return [];
+      range = older.sort((a, b) => a - b).slice(-limit).join(',');
+      byUid = true;
+    }
     const messages = [];
-    for await (const message of client.fetch(`${start}:*`, { uid: true, envelope: true, flags: true, bodyStructure: true })) {
+    for await (const message of client.fetch(range, { uid: true, envelope: true, flags: true, bodyStructure: true }, { uid: byUid })) {
       messages.push({
         uid: message.uid,
         from: toPerson(message.envelope.from?.[0]),

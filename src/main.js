@@ -341,9 +341,11 @@ function registerIpc() {
     await deleteAccount(id);
   });
 
-  ipcMain.handle('email:list', async (event, accountId, limit) => {
+  ipcMain.handle('email:list', async (event, accountId, limit, beforeUid) => {
     validateEmailEvent(event, accountId);
-    const messages = await mail.listInbox(getEmailAccount(accountId), Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 200) : 50);
+    const size = Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 200) : 50;
+    const before = Number.isSafeInteger(beforeUid) && beforeUid > 0 ? beforeUid : 0;
+    const messages = await mail.listInbox(getEmailAccount(accountId), size, before);
     emailAuthFailed.delete(accountId);
     return messages;
   });
